@@ -18,15 +18,36 @@ export const getProductByIdService = async (id: string) => {
 };
 
 export const createProductService = async (data: { name: string; price: number; stock: number; categoryId: string }) => {
+  const { categoryId, ...productData } = data;
   return await prisma.product.create({
-    data,
+    data: {
+      ...productData,
+      category: {
+        connectOrCreate: {
+          where: { id: categoryId },
+          create: { id: categoryId, name: `Category ${categoryId}` }
+        }
+      }
+    }
   });
 };
 
 export const updateProductService = async (id: string, data: { name?: string; price?: number; stock?: number; categoryId?: string }) => {
+  const { categoryId, ...productData } = data;
+  const updateData: any = { ...productData };
+  
+  if (categoryId) {
+    updateData.category = {
+      connectOrCreate: {
+        where: { id: categoryId },
+        create: { id: categoryId, name: `Category ${categoryId}` }
+      }
+    };
+  }
+
   return await prisma.product.update({
     where: { id },
-    data,
+    data: updateData,
   });
 };
 
